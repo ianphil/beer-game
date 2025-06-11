@@ -89,24 +89,29 @@ class Retailer(BaseRole):
         # In a real game, this would be the player's decision
         return self.current_customer_order
     
-    def execute_week(self, order_decision: int) -> None:
+    def execute_week(self, order_decision: int) -> int:
         """
         Execute all steps for one week (retailer version).
         
         Args:
             order_decision: Order to place to wholesaler
+            
+        Returns:
+            Amount shipped to customers this week
         """
         self.current_week += 1
         
         # Execute all 5 steps
         self.step_1_receive_inventory()
-        self.step_2_fill_orders()  # Uses customer orders internally
+        filled, _ = self.step_2_fill_orders()  # Uses customer orders internally
         self.step_3_record(order_decision)
         outgoing_order = self.step_4_advance_order_slips()
         
         # Add new order to delay pipeline
         self.outgoing_order_delay.add_input(order_decision)
         self.last_order_placed = order_decision
+        
+        return filled
     
     def print_status(self) -> None:
         """Print current status including customer order info."""

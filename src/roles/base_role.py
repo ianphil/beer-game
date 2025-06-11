@@ -114,25 +114,30 @@ class BaseRole(ABC):
         """
         pass
     
-    def execute_week(self, incoming_order: int, order_decision: int) -> None:
+    def execute_week(self, incoming_order: int, order_decision: int) -> int:
         """
         Execute all steps for one week.
         
         Args:
             incoming_order: Orders received this week
             order_decision: Order to place this week
+            
+        Returns:
+            Amount shipped this week
         """
         self.current_week += 1
         
         # Execute all 5 steps
         self.step_1_receive_inventory()
-        self.step_2_fill_orders(incoming_order)
+        filled, _ = self.step_2_fill_orders(incoming_order)
         self.step_3_record(order_decision)
         self.step_4_advance_order_slips()
         
         # Add new order to delay pipeline
         self.outgoing_order_delay.add_input(order_decision)
         self.last_order_placed = order_decision
+        
+        return filled
     
     def get_current_cost(self) -> float:
         """Get the cost for the current week."""

@@ -73,19 +73,22 @@ class Factory(BaseRole):
         # In a real game, this would be the player's decision
         return self.current_incoming_order
     
-    def execute_week(self, incoming_order: int, production_decision: int) -> None:
+    def execute_week(self, incoming_order: int, production_decision: int) -> int:
         """
         Execute all steps for one week (factory version).
         
         Args:
             incoming_order: Orders received from distributor
             production_decision: Production level to set
+            
+        Returns:
+            Amount shipped to distributor this week
         """
         self.current_week += 1
         
         # Execute factory-specific steps
         self.step_1_receive_inventory()  # From production delay
-        self.step_2_fill_orders(incoming_order)
+        filled, _ = self.step_2_fill_orders(incoming_order)
         self.step_3_record(production_decision)
         self.step_4_advance_order_slips()  # No-op for factory
         
@@ -93,6 +96,8 @@ class Factory(BaseRole):
         self.production_delay.add_input(production_decision)
         self.last_production_request = production_decision
         self.last_order_placed = production_decision  # For consistency
+        
+        return filled
     
     def receive_order_from_distributor(self, order: int) -> None:
         """
